@@ -1,13 +1,16 @@
+import openpyxl
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from marshmallow import Schema, fields
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://your_username:your_password@localhost/your_database'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
+admin = Admin(app, name='Admin Panel', template_mode='bootstrap3')
 
 # Определение моделей
 class Teacher(db.Model):
@@ -92,8 +95,57 @@ class LessonTypeSchema(Schema):
     id = fields.Integer()
     name = fields.String()
 
+#
+class TeacherView(ModelView):
+    column_display_pk = True  # Отображать первичные ключи
+    column_searchable_list = ['surname', 'name']  # Поля для поиска
 
-# Добавление эндпоинтов для получения данных
+# Добавляем представления (views) для моделей
+admin.add_view(ModelView(Teacher, db.session, name='Teachers'))
+admin.add_view(ModelView(Item, db.session, name='Items'))
+admin.add_view(ModelView(LessonType, db.session, name='Lesson Types'))
+admin.add_view(ModelView(Frame, db.session, name='Frames'))
+admin.add_view(ModelView(Audience, db.session, name='Audiences'))
+admin.add_view(ModelView(Time, db.session, name='Times'))
+admin.add_view(ModelView(Group, db.session, name='Groups'))
+admin.add_view(ModelView(Schedule, db.session, name='Schedules'))
+
+# Эндпоинт для загрузки Excel-файла с расписанием
+@app.route('/upload-schedule', methods=['POST'])
+def upload_schedule():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file:
+        try:
+            # Открываем Excel-файл с помощью библиотеки openpyxl
+            wb = openpyxl.load_workbook(file)
+            sheet = wb.active
+
+            # Проходим по строкам Excel-файла и извлекаем данные
+            for row in sheet.iter_rows(min_row=1, max_row=sheet.max_row):
+                # Здесь вы можете извлекать и сохранять данные в вашу базу данных
+                # Пример:
+                group = row[5].value
+                # day = row[6].value
+                # time = row[7].value
+                # discipline = row[8].value
+                # location = row[9].value
+                # ...
+
+            # Сохраняем изменения в базе данных
+            db.session.commit()
+
+            return jsonify({'message': 'Schedule uploaded successfully'}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+# Добавление других эндпоинтов для получения данных
 @app.route('/teachers', methods=['GET'])
 def get_teachers():
     teachers = Teacher.query.all()
