@@ -15,7 +15,6 @@ admin = Admin(app, name='Admin Panel', template_mode='bootstrap3')
 # Определение моделей
 class Teacher(db.Model):
     __tablename__ = 'new_teachers'
-
     id = db.Column(db.Integer, primary_key=True)
     surname = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), nullable=False)
@@ -23,25 +22,21 @@ class Teacher(db.Model):
 
 class Item(db.Model):
     __tablename__ = 'new_items'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
 
 class LessonType(db.Model):
     __tablename__ = 'new_lesson_type'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
 
 class Frame(db.Model):
     __tablename__ = 'new_frames'
-
     id = db.Column(db.Integer, primary_key=True)
     address = db.Column(db.String(255), nullable=False)
 
 class Audience(db.Model):
     __tablename__ = 'new_audiences'
-
     id = db.Column(db.Integer, primary_key=True)
     floor_number = db.Column(db.Integer, nullable=False)
     room_number = db.Column(db.String(10), nullable=False)
@@ -50,14 +45,12 @@ class Audience(db.Model):
 
 class Time(db.Model):
     __tablename__ = 'new_time'
-
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
 
 class Group(db.Model):
     __tablename__ = 'new_groups'
-
     id = db.Column(db.Integer, primary_key=True)
     faculty = db.Column(db.String(255), nullable=False)
     well = db.Column(db.Integer, nullable=False)
@@ -65,7 +58,6 @@ class Group(db.Model):
 
 class Schedule(db.Model):
     __tablename__ = 'new_schedule'
-
     id = db.Column(db.Integer, primary_key=True)
     data_les = db.Column(db.Date)
     week = db.Column(db.String(255))
@@ -80,7 +72,7 @@ class Schedule(db.Model):
     id_audience = db.Column(db.Integer, db.ForeignKey('new_audiences.id', ondelete='SET NULL'))
     audience = db.relationship('Audience', backref='schedules')
 
-# Определение схем для маршализации данных
+# Определение схем для маршрутизации данных
 class TeacherSchema(Schema):
     id = fields.Integer()
     surname = fields.String()
